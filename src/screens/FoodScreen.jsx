@@ -36,17 +36,71 @@ const MEALS = [
   { id: 'snack', label: 'Snacks', icon: 'apple', emoji: '🍎' }
 ];
 
+const STANDARD_UNIT_GRAMS = {
+  Grams: 1,
+  ml: 1,
+  Piece: 100,
+  Slice: 30,
+  Scoop: 30,
+  Cup: 240,
+  Bowl: 350,
+  Tbsp: 15,
+  Tsp: 5,
+  Oz: 28.35,
+  Lb: 453.6,
+};
+
 // Helper to normalize food structures
 const normalizeFood = (food) => {
+  if (!food) return null;
   const unitValue = Number(food.unitValue) || 100;
   let defaultUnit = String(food.defaultUnit || 'Grams').trim();
-  if (['gram', 'grams'].includes(defaultUnit.toLowerCase())) defaultUnit = 'Grams';
+  const lowerUnit = defaultUnit.toLowerCase();
+  if (['gram', 'grams', 'g'].includes(lowerUnit)) defaultUnit = 'Grams';
+  if (['ml', 'mls', 'milliliter', 'milliliters'].includes(lowerUnit)) defaultUnit = 'ml';
+  if (['piece', 'pieces', 'pcs'].includes(lowerUnit)) defaultUnit = 'Piece';
+  if (['slice', 'slices'].includes(lowerUnit)) defaultUnit = 'Slice';
+  if (['scoop', 'scoops'].includes(lowerUnit)) defaultUnit = 'Scoop';
+  if (['cup', 'cups'].includes(lowerUnit)) defaultUnit = 'Cup';
+  if (['bowl', 'bowls'].includes(lowerUnit)) defaultUnit = 'Bowl';
+  if (['tbsp', 'tablespoon', 'tablespoons'].includes(lowerUnit)) defaultUnit = 'Tbsp';
+  if (['tsp', 'teaspoon', 'teaspoons'].includes(lowerUnit)) defaultUnit = 'Tsp';
+  if (['oz', 'ounces', 'ounce'].includes(lowerUnit)) defaultUnit = 'Oz';
+  if (['lb', 'pounds', 'pound', 'lbs'].includes(lowerUnit)) defaultUnit = 'Lb';
 
-  const normalizedUnits = food.units
-    ? { ...food.units }
-    : (defaultUnit === 'Grams'
-      ? { Grams: 1 }
-      : { [defaultUnit]: unitValue, Grams: 1 });
+  const units = {};
+
+  if (food.units) {
+    Object.entries(food.units).forEach(([uName, val]) => {
+      let cleanUName = uName;
+      const lowerUName = uName.toLowerCase();
+      if (['gram', 'grams', 'g'].includes(lowerUName)) cleanUName = 'Grams';
+      if (['ml', 'mls', 'milliliter', 'milliliters'].includes(lowerUName)) cleanUName = 'ml';
+      units[cleanUName] = val;
+    });
+  } else {
+    const standardWeight = STANDARD_UNIT_GRAMS[defaultUnit] || 100;
+    if (!['Grams', 'ml'].includes(defaultUnit)) {
+      units[defaultUnit] = unitValue > 10 ? unitValue : standardWeight;
+    }
+  }
+
+  if (units['Grams'] === undefined) units['Grams'] = 1;
+  if (units['ml'] === undefined) units['ml'] = 1;
+
+  Object.entries(STANDARD_UNIT_GRAMS).forEach(([uName, standardVal]) => {
+    if (units[uName] === undefined) {
+      units[uName] = standardVal;
+    }
+  });
+
+  let baseServingGrams = 100;
+  if (defaultUnit === 'Grams' || defaultUnit === 'ml') {
+    baseServingGrams = unitValue;
+  } else {
+    const singleUnitWeight = units[defaultUnit] || 100;
+    baseServingGrams = unitValue > 10 ? unitValue : (unitValue * singleUnitWeight);
+  }
 
   return {
     ...food,
@@ -57,7 +111,8 @@ const normalizeFood = (food) => {
     defaultUnit,
     unitValue,
     base: defaultUnit === 'Grams' ? `${unitValue}g` : `1 ${defaultUnit}`,
-    units: normalizedUnits
+    units,
+    baseServingGrams
   };
 };
 
@@ -205,7 +260,8 @@ const SmartFoodAdder = ({ mealType, date, onFoodLogged, customFoods, refreshCust
 
   const currentMacros = useMemo(() => {
     if (!selectedFood) return { calories: 0, protein: 0, carbs: 0 };
-    const ratio = quantity / (selectedFood.units[unit] || 1);
+    const grams = quantity * (selectedFood.units[unit] || 1);
+    const ratio = grams / (selectedFood.baseServingGrams || 100);
     return {
       calories: Math.round(selectedFood.cal * ratio),
       protein: Number((selectedFood.p * ratio).toFixed(1)),
@@ -536,14 +592,14 @@ const MealSection = ({ meal, date, allLogs, onRefresh, customFoods, refreshCusto
 
   const handleStartEdit = (food) => {
     setEditingLogId(food._id);
-    setEditQty(String(food.quantity));
+    setEditQty(String(food.quantity || 1));
     setEditUnit(food.unit || 'Grams');
 
     // Retrieve database info
-    const dbMatch = FOOD_DATABASE.find(f => f.name.toLowerCase() === food.foodName.toLowerCase());
-    const customMatch = customFoods.find(f => f.name.toLowerCase() === food.foodName.toLowerCase());
+    const dbMatch = FOOD_DATABASE.find(f => f.name.toLowerCase() === food.name.toLowerCase());
+    const customMatch = customFoods.find(f => f.name.toLowerCase() === food.name.toLowerCase());
     setEditFoodObj(normalizeFood(dbMatch || customMatch || {
-      name: food.foodName,
+      name: food.name,
       calories: (Number(food.calories) || 0) / ((Number(food.quantity) || 100) / 100),
       protein: (Number(food.protein) || 0) / ((Number(food.quantity) || 100) / 100),
       carbs: (Number(food.carbs) || 0) / ((Number(food.quantity) || 100) / 100),
@@ -555,7 +611,8 @@ const MealSection = ({ meal, date, allLogs, onRefresh, customFoods, refreshCusto
   const currentEditMacros = useMemo(() => {
     if (!editFoodObj) return { calories: 0, protein: 0, carbs: 0 };
     const qtyNum = Number(editQty) || 0;
-    const ratio = qtyNum / (editFoodObj.units[editUnit] || 1);
+    const grams = qtyNum * (editFoodObj.units[editUnit] || 1);
+    const ratio = grams / (editFoodObj.baseServingGrams || 100);
     return {
       calories: Math.round(editFoodObj.cal * ratio),
       protein: Number((editFoodObj.p * ratio).toFixed(1)),
@@ -677,7 +734,7 @@ const MealSection = ({ meal, date, allLogs, onRefresh, customFoods, refreshCusto
                   return (
                     <View key={food._id} style={styles.inlineEditForm}>
                       <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>
-                        Editing {food.foodName}
+                        Editing {food.name}
                       </Text>
                       <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
                         <ScrollPicker
@@ -725,9 +782,9 @@ const MealSection = ({ meal, date, allLogs, onRefresh, customFoods, refreshCusto
                 return (
                   <View key={food._id} style={styles.foodItem}>
                     <View style={{ flex: 1, marginRight: 8 }}>
-                      <Text style={styles.foodName}>{food.foodName}</Text>
+                      <Text style={styles.foodName}>{food.name}</Text>
                       <Text style={[styles.foodMacrosText, { color: 'rgba(255, 255, 255, 0.3)' }]}>
-                        {food.quantity}{food.unit} •{' '}
+                        {food.quantity || 1} {food.unit || 'Grams'} •{' '}
                         <Text style={{ color: '#a78bfa' }}>P: {food.protein}g</Text> •{' '}
                         <Text style={{ color: '#34d399' }}>C: {food.carbs}g</Text>
                       </Text>
