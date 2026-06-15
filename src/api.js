@@ -39,7 +39,15 @@ export const saveWorkout = async (data) => (await api.post('/workouts', data)).d
 // Food log endpoints
 export const fetchFoodLogs = async (date) => (await api.get('/food', { params: date ? { date } : {} })).data;
 export const saveFoodLog = async (data) => (await api.post('/food', data)).data;
-export const deleteFoodLog = async (id) => (await api.delete(`/food/${id}`)).data;
+export const deleteFoodLog = async (dateOrId, mealType, foodId) => {
+  if (mealType && foodId) {
+    return (await api.delete(`/food/item/${dateOrId}/${mealType}/${foodId}`)).data;
+  }
+  return (await api.delete(`/food/${dateOrId}`)).data;
+};
+
+// AI Nutrition lookup endpoints
+export const fetchNutrition = async (query) => (await api.get('/nutrition', { params: { query } })).data;
 
 // Custom food endpoints
 export const fetchCustomFoods = async () => (await api.get('/custom-food')).data;

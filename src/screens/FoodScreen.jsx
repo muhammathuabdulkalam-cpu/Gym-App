@@ -20,7 +20,8 @@ import {
   saveFoodLog,
   deleteFoodLog,
   fetchCustomFoods,
-  saveCustomFood
+  saveCustomFood,
+  fetchNutrition
 } from '../api';
 import { FOOD_DATABASE } from '../constants/foodDatabase';
 import ScreenWrapper from '../components/ScreenWrapper';
@@ -129,6 +130,11 @@ const SmartFoodAdder = ({ mealType, date, onFoodLogged, customFoods, refreshCust
   const [unit, setUnit] = useState('Grams');
   const [logging, setLogging] = useState(false);
 
+  // AI Lookup states
+  const [searchingAI, setSearchingAI] = useState(false);
+  const [aiResults, setAiResults] = useState([]);
+  const [aiMessage, setAiMessage] = useState('');
+
   // Custom food creator form state
   const [isCreatingCustom, setIsCreatingCustom] = useState(false);
   const [customName, setCustomName] = useState('');
@@ -155,14 +161,46 @@ const SmartFoodAdder = ({ mealType, date, onFoodLogged, customFoods, refreshCust
     setMatches(filtered);
   }, [query, customFoods]);
 
+  const handleAISearch = async () => {
+    if (!query.trim()) return;
+    setSearchingAI(true);
+    setAiResults([]);
+    setAiMessage('');
+    try {
+      const data = await fetchNutrition(query.trim());
+      if (data.needs_key) {
+        setAiMessage(data.message || 'Configure your free Gemini API key in Settings.');
+      } else if (Array.isArray(data)) {
+        if (data.length === 0) {
+          setAiMessage('No suggestions from AI.');
+        } else {
+          setAiResults(data.map(normalizeFood));
+        }
+      } else {
+        setAiMessage('Invalid AI response.');
+      }
+    } catch {
+      setAiMessage('AI Lookup failed. Check API key.');
+    } finally {
+      setSearchingAI(false);
+    }
+  };
+
   const handleSelectFood = (food) => {
     const norm = normalizeFood(food);
     setSelectedFood(norm);
     setQuery('');
     setMatches([]);
+    setAiResults([]);
+    setAiMessage('');
     setQuantity(norm.defaultUnit === 'Grams' ? 100 : 1);
     setUnit(norm.defaultUnit);
   };
+
+  const allSuggestions = useMemo(() => {
+    const aiMapped = aiResults.map(f => ({ ...f, source: 'ai' }));
+    return [...aiMapped, ...matches];
+  }, [aiResults, matches]);
 
   const currentMacros = useMemo(() => {
     if (!selectedFood) return { calories: 0, protein: 0, carbs: 0 };
@@ -339,41 +377,80 @@ const SmartFoodAdder = ({ mealType, date, onFoodLogged, customFoods, refreshCust
         <MaterialCommunityIcons name="magnify" size={20} color="#71717a" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search foods (e.g. Banana, Chicken...)"
+          placeholder="Search food or ask AI (e.g. 3 eggs)..."
           placeholderTextColor="#71717a"
           value={query}
-          onChangeText={setQuery}
+          onChangeText={(val) => {
+            setQuery(val);
+            if (aiResults.length > 0) setAiResults([]);
+            if (aiMessage) setAiMessage('');
+          }}
+          onSubmitEditing={handleAISearch}
         />
         {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery('')} style={styles.clearSearchBtn}>
+          <TouchableOpacity onPress={() => { setQuery(''); setAiResults([]); setAiMessage(''); }} style={styles.clearSearchBtn}>
             <MaterialCommunityIcons name="close" size={16} color="#71717a" />
           </TouchableOpacity>
         )}
+        <TouchableOpacity
+          onPress={handleAISearch}
+          disabled={searchingAI || !query.trim()}
+          style={styles.aiSearchBtn}
+        >
+          {searchingAI ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <MaterialCommunityIcons name="robot-outline" size={20} color="#a78bfa" />
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Matches suggestions dropdown */}
-      {matches.length > 0 && (
+      {allSuggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
-          {matches.map((food, i) => (
+          {searchingAI && (
+            <View style={{ padding: 12, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)' }}>
+              <ActivityIndicator size="small" color="#a78bfa" />
+            </View>
+          )}
+          {allSuggestions.map((food, i) => (
             <TouchableOpacity
               key={i}
-              style={styles.suggestionItem}
+              style={[styles.suggestionItem, food.source === 'ai' && { backgroundColor: 'rgba(167, 139, 250, 0.06)' }]}
               onPress={() => handleSelectFood(food)}
             >
-              <Text style={styles.suggestionName} numberOfLines={1}>{food.name}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                {food.source === 'ai' && (
+                  <View style={{ backgroundColor: 'rgba(167, 139, 250, 0.2)', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 }}>
+                    <Text style={{ color: '#a78bfa', fontSize: 8, fontWeight: 'bold' }}>AI</Text>
+                  </View>
+                )}
+                <Text style={styles.suggestionName} numberOfLines={1}>{food.name}</Text>
+              </View>
               <Text style={styles.suggestionCalories}>{food.cal} kcal/{food.base}</Text>
             </TouchableOpacity>
           ))}
         </View>
       )}
 
+      {aiMessage.length > 0 && (
+        <View style={styles.aiMessageContainer}>
+          <Text style={styles.aiMessageText}>⚠️ {aiMessage}</Text>
+        </View>
+      )}
+
       {/* No matches fallback */}
-      {query.trim().length > 0 && matches.length === 0 && (
+      {query.trim().length > 0 && allSuggestions.length === 0 && !searchingAI && !aiMessage && (
         <View style={styles.noMatchesContainer}>
           <Text style={styles.noMatchesText}>No matching foods found.</Text>
-          <TouchableOpacity style={styles.createCustomBtn} onPress={() => { setIsCreatingCustom(true); setCustomName(query); }}>
-            <Text style={styles.createCustomBtnText}>+ Create "{query}"</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity style={styles.createCustomBtn} onPress={handleAISearch}>
+              <Text style={styles.createCustomBtnText}>Search with AI</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.createCustomBtn} onPress={() => { setIsCreatingCustom(true); setCustomName(query); }}>
+              <Text style={styles.createCustomBtnText}>+ Create Custom</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -950,6 +1027,27 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, color: '#fff', fontSize: 14 },
   clearSearchBtn: { padding: 4 },
+  aiSearchBtn: {
+    padding: 6,
+    marginLeft: 4,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  aiMessageContainer: {
+    backgroundColor: '#151622',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(249, 115, 22, 0.1)',
+    marginTop: 8,
+    alignItems: 'center'
+  },
+  aiMessageText: {
+    color: '#fb923c',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
   
   suggestionsContainer: { 
     backgroundColor: '#151622', 

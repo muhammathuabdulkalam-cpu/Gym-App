@@ -33,6 +33,7 @@ export default function SettingsScreen() {
   const [gender, setGender] = useState(user?.gender || 'male');
   const [dob, setDob] = useState(user?.dob || '');
   const [profileImage, setProfileImage] = useState(user?.profileImage || DEFAULT_AVATAR);
+  const [geminiApiKey, setGeminiApiKey] = useState(user?.geminiApiKey || '');
   const [saving, setSaving] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -137,6 +138,7 @@ export default function SettingsScreen() {
       setGender(user.gender || 'male');
       if (user.dob) setDob(user.dob);
       if (user.profileImage) setProfileImage(user.profileImage);
+      setGeminiApiKey(user.geminiApiKey || '');
     }
   }, [user]);
 
@@ -232,6 +234,7 @@ export default function SettingsScreen() {
       height: height ? Number(height) : user?.height,
       gender,
       dob,
+      geminiApiKey
     };
     await updateUserProfile(localUpdates);
 
@@ -244,9 +247,10 @@ export default function SettingsScreen() {
         height: height ? Number(height) : undefined,
         gender,
         dob,
+        geminiApiKey
       });
       // Step 3: Merge server response but ALWAYS keep local dob (server may not support it yet)
-      await updateUserProfile({ ...updated, dob });
+      await updateUserProfile({ ...updated, dob, geminiApiKey });
       Alert.alert('Success', 'Profile updated successfully! ✓');
     } catch (err) {
       // Even if server sync fails, local data is already saved (step 1)
@@ -383,6 +387,22 @@ export default function SettingsScreen() {
                   keyboardType="numeric"
                 />
                 <Text style={styles.unitText}>cm</Text>
+              </View>
+
+              {/* Gemini API Key field */}
+              <Text style={styles.fieldLabel}>Google Gemini API Key (For AI Food Tracker)</Text>
+              <View style={styles.inputWrapper}>
+                <MaterialCommunityIcons name="key-variant" size={20} color="rgba(255, 255, 255, 0.3)" style={styles.fieldIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={geminiApiKey}
+                  onChangeText={setGeminiApiKey}
+                  placeholder="AI Studio API Key"
+                  placeholderTextColor="rgba(255, 255, 255, 0.2)"
+                  secureTextEntry={true}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
               </View>
             </View>
 
