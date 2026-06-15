@@ -1,5 +1,10 @@
 {
   "expo": {
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "name": "GYM-APP",
     "slug": "GYM-APP",
     "version": "1.0.0",
@@ -7,7 +12,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow Tranzio to access your photos to update your profile picture.",
+        "NSCameraUsageDescription": "Allow Tranzio to use your camera to take a profile photo."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -15,10 +24,24 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.thouficafzal.GYMAPP",
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Tranzio to access your photos to update your profile picture."
+        }
+      ]
+    ]
   }
 }
