@@ -179,8 +179,9 @@ const SmartFoodAdder = ({ mealType, date, onFoodLogged, customFoods, refreshCust
       } else {
         setAiMessage('Invalid AI response.');
       }
-    } catch {
-      setAiMessage('AI Lookup failed. Check API key.');
+    } catch (err) {
+      const serverMsg = err.response?.data?.message;
+      setAiMessage(serverMsg || 'AI Lookup failed. Check API key.');
     } finally {
       setSearchingAI(false);
     }
