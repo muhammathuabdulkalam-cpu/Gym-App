@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Easing, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, RadialGradient, Stop, Rect, Circle, Line, G } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
@@ -83,12 +83,12 @@ export default function SplashScreen({ mode = 'loading' }) {
     Animated.loop(
       Animated.parallel([
         Animated.sequence([
-          Animated.timing(orb1Y, { toValue: 40, duration: 4000, useNativeDriver: true }),
-          Animated.timing(orb1Y, { toValue: 0, duration: 4000, useNativeDriver: true }),
+          Animated.timing(orb1Y, { toValue: 40, duration: 4000, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(orb1Y, { toValue: 0, duration: 4000, useNativeDriver: Platform.OS !== 'web' }),
         ]),
         Animated.sequence([
-          Animated.timing(orb2Y, { toValue: -50, duration: 4500, useNativeDriver: true }),
-          Animated.timing(orb2Y, { toValue: 0, duration: 4500, useNativeDriver: true }),
+          Animated.timing(orb2Y, { toValue: -50, duration: 4500, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(orb2Y, { toValue: 0, duration: 4500, useNativeDriver: Platform.OS !== 'web' }),
         ]),
       ])
     ).start();
@@ -99,7 +99,7 @@ export default function SplashScreen({ mode = 'loading' }) {
         toValue: 1,
         duration: 25000,
         easing: Easing.linear,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       })
     ).start();
 
@@ -108,7 +108,7 @@ export default function SplashScreen({ mode = 'loading' }) {
         toValue: 1,
         duration: 3200,
         easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       })
     ).start();
 
@@ -118,13 +118,13 @@ export default function SplashScreen({ mode = 'loading' }) {
         toValue: 1,
         duration: 450,
         easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.spring(logoScale, {
         toValue: 1,
         friction: 6,
         tension: 50,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
 
@@ -134,7 +134,7 @@ export default function SplashScreen({ mode = 'loading' }) {
         toValue: 220,
         duration: 1300,
         easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }, 250);
 
@@ -144,7 +144,7 @@ export default function SplashScreen({ mode = 'loading' }) {
         toValue: 1,
         duration: 600,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }, 450);
   }, []);
@@ -167,7 +167,7 @@ export default function SplashScreen({ mode = 'loading' }) {
           toValue: -60,
           friction: 8,
           tension: 40,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
 
         // "Welcome back," slides into view
@@ -175,13 +175,13 @@ export default function SplashScreen({ mode = 'loading' }) {
           Animated.timing(welcomeOpacity, {
             toValue: 1,
             duration: 400,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
           Animated.timing(welcomeTranslateY, {
             toValue: 0,
             duration: 400,
             easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
         ]),
       ]).start();
@@ -194,22 +194,22 @@ export default function SplashScreen({ mode = 'loading' }) {
             toValue: 1,
             duration: 1200,
             easing: Easing.out(Easing.bezier(0.16, 1, 0.3, 1)),
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
           Animated.spring(nameScale, {
             toValue: 1,
             friction: 7,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
         ]).start();
 
         // 2. Username container glitch/flicker pop-in
         Animated.sequence([
-          Animated.timing(nameOpacity, { toValue: 0.2, duration: 45, useNativeDriver: true }),
-          Animated.timing(nameOpacity, { toValue: 0.05, duration: 30, useNativeDriver: true }),
-          Animated.timing(nameOpacity, { toValue: 0.7, duration: 60, useNativeDriver: true }),
-          Animated.timing(nameOpacity, { toValue: 0.15, duration: 40, useNativeDriver: true }),
-          Animated.timing(nameOpacity, { toValue: 1, duration: 150, useNativeDriver: true }),
+          Animated.timing(nameOpacity, { toValue: 0.2, duration: 45, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(nameOpacity, { toValue: 0.05, duration: 30, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(nameOpacity, { toValue: 0.7, duration: 60, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(nameOpacity, { toValue: 0.15, duration: 40, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(nameOpacity, { toValue: 1, duration: 150, useNativeDriver: Platform.OS !== 'web' }),
         ]).start();
       }, 200);
 
@@ -219,13 +219,13 @@ export default function SplashScreen({ mode = 'loading' }) {
           Animated.timing(quoteOpacity, {
             toValue: 1,
             duration: 600,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
           Animated.timing(quoteTranslateY, {
             toValue: 0,
             duration: 600,
             easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
         ]).start(() => {
           // Quote Breathing Scale Loop
@@ -235,13 +235,13 @@ export default function SplashScreen({ mode = 'loading' }) {
                 toValue: 1.03,
                 duration: 2500,
                 easing: Easing.inOut(Easing.ease),
-                useNativeDriver: true,
+                useNativeDriver: Platform.OS !== 'web',
               }),
               Animated.timing(quoteScale, {
                 toValue: 1.0,
                 duration: 2500,
                 easing: Easing.inOut(Easing.ease),
-                useNativeDriver: true,
+                useNativeDriver: Platform.OS !== 'web',
               }),
             ])
           ).start();
@@ -254,7 +254,7 @@ export default function SplashScreen({ mode = 'loading' }) {
       Animated.timing(containerOpacity, {
         toValue: 0,
         duration: 350,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }, 2850);
   }, [mode, user]);
