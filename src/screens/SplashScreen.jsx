@@ -310,7 +310,7 @@ export default function SplashScreen({ mode = 'loading' }) {
       <Animated.View style={[styles.glowOrb, styles.purpleOrb, { transform: [{ translateY: orb1Y }] }]}>
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
           <Defs>
-            <RadialGradient id="pOrb" cx="0.5" cy="0.5" r="0.5">
+            <RadialGradient id="pOrb" cx="50%" cy="50%" r="50%">
               <Stop offset="0%" stopColor="#7c3aed" stopOpacity="0.25" />
               <Stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
             </RadialGradient>
@@ -322,7 +322,7 @@ export default function SplashScreen({ mode = 'loading' }) {
       <Animated.View style={[styles.glowOrb, styles.cyanOrb, { transform: [{ translateY: orb2Y }] }]}>
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
           <Defs>
-            <RadialGradient id="cOrb" cx="0.5" cy="0.5" r="0.5">
+            <RadialGradient id="cOrb" cx="50%" cy="50%" r="50%">
               <Stop offset="0%" stopColor="#0891b2" stopOpacity="0.2" />
               <Stop offset="100%" stopColor="#0891b2" stopOpacity="0" />
             </RadialGradient>
