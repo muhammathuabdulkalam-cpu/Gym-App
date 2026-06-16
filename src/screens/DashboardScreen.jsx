@@ -20,7 +20,8 @@ import {
   saveFitnessData,
   fetchFoodLogs,
   fetchCardioLogs,
-  fetchWorkouts
+  fetchWorkouts,
+  updateProfile
 } from '../api';
 import { getCachedData, isCacheFresh, prefetchDashboardData } from '../utils/dataCache';
 import ScreenWrapper from '../components/ScreenWrapper';
@@ -32,7 +33,7 @@ const FILTERS = ['7 Days', '30 Days', '3 Months'];
 const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
 
 export default function DashboardScreen({ navigation }) {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const isFocused = useIsFocused();
   const today = new Date().toISOString().split('T')[0];
   const hasLoadedOnce = useRef(false);
@@ -177,8 +178,11 @@ export default function DashboardScreen({ navigation }) {
   }, [displayData]);
 
   const bmiData = useMemo(() => {
-    const height = Number(user?.height) || 178;
-    const weight = Number(user?.weight || latest?.weight || 87.7);
+    const height = Number(user?.height);
+    const weight = Number(user?.weight || latest?.weight);
+    if (!height || !weight) {
+      return { score: '—', status: 'Set profile data', color: '#a1a1aa' };
+    }
     const heightM = height / 100;
     const score = weight / (heightM * heightM);
     
@@ -188,7 +192,7 @@ export default function DashboardScreen({ navigation }) {
     else if (score >= 25 && score < 30) { status = 'Overweight'; color = '#fb923c'; }
     else if (score >= 30) { status = 'Obese'; color = '#f87171'; }
     
-    return { score: score ? score.toFixed(1) : '27.7', status: score ? status : 'Overweight', color };
+    return { score: score.toFixed(1), status, color };
   }, [user, latest]);
 
   // Auto-calculate age from DOB
@@ -207,8 +211,15 @@ export default function DashboardScreen({ navigation }) {
   const handleQuickWeightSave = async () => {
     if (!quickWeight || isNaN(quickWeight)) return;
     setSavingWeight(true);
+    const weightNum = Number(quickWeight);
     try {
-      await saveFitnessData({ date: today, weight: Number(quickWeight) });
+      await saveFitnessData({ date: today, weight: weightNum });
+      try {
+        const updatedUser = await updateProfile({ weight: weightNum });
+        updateUserProfile(updatedUser);
+      } catch (err) {
+        updateUserProfile({ weight: weightNum });
+      }
       setQuickWeight('');
       await loadData();
     } catch (e) {
@@ -284,7 +295,7 @@ export default function DashboardScreen({ navigation }) {
       color: '#a855f7',
       bgColor: '#a855f7',
       label: 'Weight',
-      value: `${user?.weight || latest?.weight || 87.7}`,
+      value: `${user?.weight || latest?.weight || '—'}`,
       unit: 'kg',
       sub: 'Latest Log',
     },
@@ -310,7 +321,7 @@ export default function DashboardScreen({ navigation }) {
             <View style={styles.headerTextContainer}>
               <Text style={styles.welcomeText}>Welcome back,</Text>
               <View style={styles.nameRow}>
-                <Text style={styles.greetingName}>{user?.name || 'Afzal'}!</Text>
+                <Text style={styles.greetingName}>{user?.name || 'Athlete'}!</Text>
                 <View style={styles.ageBadge}>
                   <Text style={styles.ageBadgeText}>{computedAge ?? user?.age ?? '—'} yrs</Text>
                 </View>

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getStorageItem, setStorageItem, deleteStorageItem } from '../utils/storage';
 import { fetchUserProfile } from '../api';
+import { clearCache } from '../utils/dataCache';
 
 const AuthContext = createContext(null);
 
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (userData) => {
     try {
+      clearCache();
       await setStorageItem('user', JSON.stringify(userData));
       setUser(userData);
     } catch (error) {
@@ -63,6 +65,7 @@ export const AuthProvider = ({ children }) => {
 
   const logoutUser = async () => {
     try {
+      clearCache();
       await deleteStorageItem('user');
       setUser(null);
     } catch (error) {

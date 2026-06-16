@@ -207,8 +207,11 @@ export default function SettingsScreen() {
 
   // Dynamic BMI Calculation for the Profile Card
   const bmiData = useMemo(() => {
-    const wtNum = Number(weight) || 87.7;
-    const htNum = Number(height) || 178;
+    const wtNum = Number(weight);
+    const htNum = Number(height);
+    if (!wtNum || !htNum) {
+      return { score: '—', status: 'SET DATA', color: '#a1a1aa' };
+    }
     const heightM = htNum / 100;
     const score = wtNum / (heightM * heightM);
 
@@ -218,7 +221,7 @@ export default function SettingsScreen() {
     else if (score >= 18.5 && score < 25) { status = 'NORM'; color = '#34d399'; }
     else if (score >= 30) { status = 'OBESE'; color = '#f87171'; }
 
-    return { score: score ? score.toFixed(1) : '27.7', status, color };
+    return { score: score.toFixed(1), status, color };
   }, [weight, height]);
 
   const handleSave = async () => {
@@ -296,11 +299,11 @@ export default function SettingsScreen() {
               {/* Stats Inline Grid */}
               <View style={styles.statsRow}>
                 <View style={styles.statCol}>
-                  <Text style={styles.statVal}>{weight || '87.7'} <Text style={styles.statUnit}>kg</Text></Text>
+                  <Text style={styles.statVal}>{weight || '—'} <Text style={styles.statUnit}>kg</Text></Text>
                   <Text style={styles.statLabel}>WEIGHT</Text>
                 </View>
                 <View style={styles.statCol}>
-                  <Text style={styles.statVal}>{height || '178'} <Text style={styles.statUnit}>cm</Text></Text>
+                  <Text style={styles.statVal}>{height || '—'} <Text style={styles.statUnit}>cm</Text></Text>
                   <Text style={styles.statLabel}>HEIGHT</Text>
                 </View>
                 <View style={styles.statCol}>
@@ -328,6 +331,8 @@ export default function SettingsScreen() {
                   onChangeText={setName}
                   placeholder="Full Name"
                   placeholderTextColor="rgba(255, 255, 255, 0.2)"
+                  autoComplete="off"
+                  textContentType="none"
                 />
               </View>
 
@@ -367,9 +372,11 @@ export default function SettingsScreen() {
                   style={styles.input}
                   value={weight}
                   onChangeText={setWeight}
-                  placeholder="87.7"
+                  placeholder="Enter Weight"
                   placeholderTextColor="rgba(255, 255, 255, 0.2)"
                   keyboardType="numeric"
+                  autoComplete="off"
+                  textContentType="none"
                 />
                 <Text style={styles.unitText}>kg</Text>
               </View>
@@ -382,9 +389,11 @@ export default function SettingsScreen() {
                   style={styles.input}
                   value={height}
                   onChangeText={setHeight}
-                  placeholder="178"
+                  placeholder="Enter Height"
                   placeholderTextColor="rgba(255, 255, 255, 0.2)"
                   keyboardType="numeric"
+                  autoComplete="off"
+                  textContentType="none"
                 />
                 <Text style={styles.unitText}>cm</Text>
               </View>
@@ -402,6 +411,8 @@ export default function SettingsScreen() {
                   secureTextEntry={true}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  autoComplete="off"
+                  textContentType="none"
                 />
               </View>
             </View>
@@ -592,10 +603,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }
   },
   userName: {
     fontSize: 22,
@@ -727,10 +734,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#7c3aed',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 }
   },
   saveBtnText: {
     color: '#fff',
@@ -771,10 +774,6 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     padding: 20,
     alignItems: 'stretch',
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
   },
   calendarHeader: {
     marginBottom: 20,

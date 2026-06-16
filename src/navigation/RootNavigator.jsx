@@ -29,12 +29,12 @@ function MainTabs() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
           switch (route.name) {
-            case 'Home':     iconName = focused ? 'home' : 'home-outline'; break;
-            case 'Weight':   iconName = 'scale-bathroom'; break;
-            case 'Food':     iconName = 'silverware-fork-knife'; break;
+            case 'Home': iconName = focused ? 'home' : 'home-outline'; break;
+            case 'Weight': iconName = 'scale-bathroom'; break;
+            case 'Food': iconName = 'silverware-fork-knife'; break;
             case 'Workouts': iconName = 'dumbbell'; break;
-            case 'Profile':  iconName = focused ? 'account' : 'account-outline'; break;
-            default:         iconName = 'circle';
+            case 'Profile': iconName = focused ? 'account' : 'account-outline'; break;
+            default: iconName = 'circle';
           }
           return <MaterialCommunityIcons name={iconName} size={size + 2} color={color} />;
         },
@@ -55,19 +55,20 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="Home"     component={DashboardScreen} />
-      <Tab.Screen name="Weight"   component={WeightScreen} />
-      <Tab.Screen name="Food"     component={FoodScreen} />
+      <Tab.Screen name="Home" component={DashboardScreen} />
+      <Tab.Screen name="Weight" component={WeightScreen} />
+      <Tab.Screen name="Food" component={FoodScreen} />
       <Tab.Screen name="Workouts" component={WorkoutsScreen} />
-      <Tab.Screen name="Profile"  component={SettingsScreen} />
+      <Tab.Screen name="Profile" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
 
 export default function RootNavigator() {
   const { user, loading } = useAuth();
-  const [isSplashActive, setIsSplashActive] = React.useState(true);
+  const [splashMode, setSplashMode] = React.useState('loading'); // 'loading', 'welcome', 'none'
   const prefetchStarted = React.useRef(false);
+  const prevUserRef = React.useRef(null);
 
   // ── Start data prefetch the moment we have an authenticated user ──────────
   React.useEffect(() => {
@@ -78,23 +79,49 @@ export default function RootNavigator() {
     }
   }, [user, loading]);
 
-  // ── Splash timer: 2500ms total. Splash shows even while auth is loading ───
+  // ── Manage splash state transitions ───────────────────────────────────────
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsSplashActive(false);
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, []);
+    if (loading) {
+      setSplashMode('loading');
+      return;
+    }
+
+    const wasLoggedIn = !!prevUserRef.current;
+    const isLoggedIn = !!user;
+
+    if (isLoggedIn && !wasLoggedIn) {
+      // Login/Signup event or first launch already logged in
+      setSplashMode('welcome');
+      const timer = setTimeout(() => {
+        setSplashMode('none');
+      }, 3200);
+
+      prevUserRef.current = user;
+      return () => clearTimeout(timer);
+    } else if (!isLoggedIn) {
+      // Logged out or launch without user
+      setSplashMode('none');
+      prevUserRef.current = null;
+    } else {
+      // Already logged in, no state change (e.g. settings profile update)
+      prevUserRef.current = user;
+    }
+  }, [loading, user]);
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Show splash while it is active (includes the auth loading time) */}
-        {isSplashActive ? (
-          <Stack.Screen name="Splash" component={SplashScreen} />
+        {splashMode === 'loading' ? (
+          <Stack.Screen name="Splash">
+            {() => <SplashScreen mode="loading" />}
+          </Stack.Screen>
+        ) : splashMode === 'welcome' ? (
+          <Stack.Screen name="Splash">
+            {() => <SplashScreen mode="welcome" />}
+          </Stack.Screen>
         ) : user ? (
           <>
-            <Stack.Screen name="Main"       component={MainTabs} />
+            <Stack.Screen name="Main" component={MainTabs} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           </>
         ) : (

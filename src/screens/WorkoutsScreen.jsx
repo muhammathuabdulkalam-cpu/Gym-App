@@ -220,7 +220,7 @@ export default function WorkoutsScreen() {
 
   // Live calories calculation
   const liveCalories = useMemo(() => {
-    const userWeight = user?.weight || 87.7;
+    const userWeight = user?.weight || 70;
     const durationMin = pedometer.elapsedSeconds / 60;
     return estimateCalories('walking', userWeight, durationMin) + estimateStepCalories(pedometer.steps, userWeight);
   }, [pedometer.steps, pedometer.elapsedSeconds, user]);
@@ -320,7 +320,7 @@ export default function WorkoutsScreen() {
     if (pedometer.steps === 0 && pedometer.elapsedSeconds === 0) return;
     setSavingCar(true);
     try {
-      const userWeight = user?.weight || 87.7;
+      const userWeight = user?.weight || 70;
       const durationMin = pedometer.elapsedSeconds / 60;
       const calories = liveCalories;
       
@@ -351,7 +351,7 @@ export default function WorkoutsScreen() {
     }
     setSavingCar(true);
     try {
-      const userWeight = user?.weight || 87.7;
+      const userWeight = user?.weight || 70;
       const calories = estimateCalories(manualActivity, userWeight, durNum) + estimateStepCalories(stepNum, userWeight);
 
       await saveCardioLog({
@@ -886,10 +886,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#7c3aed', 
     justifyContent: 'center', 
     alignItems: 'center',
-    shadowColor: '#7c3aed',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 }
   },
   headerTitle: { fontSize: 26, fontWeight: '900', color: '#fff' },
   headerSubtitle: { fontSize: 13, color: 'rgba(255, 255, 255, 0.45)', marginTop: 4 },
@@ -1014,14 +1010,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#10b981',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#10b981',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 }
   },
   bigPlayBtnPause: {
     backgroundColor: '#7c3aed',
-    shadowColor: '#7c3aed'
   },
 
   // Mini controls inside cardio
@@ -1144,10 +1135,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#7c3aed', 
     justifyContent: 'center', 
     alignItems: 'center',
-    shadowColor: '#7c3aed',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 }
   },
 
   // Cardio List items
@@ -1186,7 +1173,7 @@ const styles = StyleSheet.create({
   addExInput: { flex: 1, backgroundColor: '#151622', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)', color: '#fff', paddingHorizontal: 16, height: 46, fontSize: 14, fontWeight: 'bold' },
   addExBtn: { width: 46, height: 46, borderRadius: 12, backgroundColor: '#7c3aed', justifyContent: 'center', alignItems: 'center' },
 
-  saveRoutineBtn: { backgroundColor: '#7c3aed', padding: 16, borderRadius: 16, alignItems: 'center', marginTop: 14, shadowColor: '#7c3aed', shadowOpacity: 0.2, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
+  saveRoutineBtn: { backgroundColor: '#7c3aed', padding: 16, borderRadius: 16, alignItems: 'center', marginTop: 14 },
   saveRoutineBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 
   // MODAL STYLES

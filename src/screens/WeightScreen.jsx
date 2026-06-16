@@ -780,7 +780,6 @@ const styles = StyleSheet.create({
   headerIconContainer: {
     width: 46, height: 46, borderRadius: 14, backgroundColor: '#7c3aed',
     justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#7c3aed', shadowOpacity: 0.35, shadowRadius: 10, shadowOffset: { width: 0, height: 3 },
   },
   headerTitle: { fontSize: 26, fontWeight: '900', color: '#fff' },
   headerSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 3 },
@@ -796,10 +795,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
   },
   statBox: { flex: 1, alignItems: 'center' },
   statBoxLabel: {
@@ -915,7 +910,6 @@ const styles = StyleSheet.create({
   plusBtn: {
     width: 48, height: 48, backgroundColor: '#7c3aed', borderRadius: 12,
     justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#7c3aed', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
   },
 
   // History
@@ -966,10 +960,6 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     padding: 20,
     alignItems: 'stretch',
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
   },
   calendarHeader: {
     marginBottom: 20,

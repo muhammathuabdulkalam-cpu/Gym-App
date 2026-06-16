@@ -971,10 +971,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f97316', 
     justifyContent: 'center', 
     alignItems: 'center',
-    shadowColor: '#f97316',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 }
   },
   headerTitle: { fontSize: 26, fontWeight: '900', color: '#fff' },
   headerSubtitle: { fontSize: 13, color: 'rgba(255, 255, 255, 0.45)', marginTop: 4 },
@@ -1203,10 +1199,6 @@ const styles = StyleSheet.create({
     borderRadius: 12, 
     alignItems: 'center', 
     marginTop: 8,
-    shadowColor: '#7c3aed',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 }
   },
   submitBtnText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
 
